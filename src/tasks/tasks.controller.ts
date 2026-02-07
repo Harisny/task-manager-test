@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiResponse } from 'src/common/dto/api-response.dto';
@@ -18,9 +19,11 @@ import {
   UpdateTaskRequest,
 } from 'src/common/dto/tasks.dto';
 import type { AuthUser } from 'src/common/dto/auth.dto';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { TasksService } from './tasks.service';
+import type { Request } from 'express';
+
+type AuthenticatedRequest = Request & { user?: AuthUser };
 
 @Controller('/api/tasks')
 @UseGuards(JwtAuthGuard)
@@ -30,10 +33,11 @@ export class TasksController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(
-    @GetUser() user: AuthUser,
-    @Body() req: CreateTaskRequest,
+    @Req() req: AuthenticatedRequest,
+    @Body() body: CreateTaskRequest,
   ): Promise<ApiResponse<TaskResponse>> {
-    const data = await this.tasksService.create(user, req);
+    const user = req.user as AuthUser;
+    const data = await this.tasksService.create(user, body);
 
     return {
       success: true,
@@ -44,7 +48,10 @@ export class TasksController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async list(@GetUser() user: AuthUser): Promise<ApiResponse<TasksResponse>> {
+  async list(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<ApiResponse<TasksResponse>> {
+    const user = req.user as AuthUser;
     const data = await this.tasksService.list(user);
 
     return {
@@ -57,9 +64,10 @@ export class TasksController {
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
   async get(
-    @GetUser() user: AuthUser,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
   ): Promise<ApiResponse<TaskResponse>> {
+    const user = req.user as AuthUser;
     const data = await this.tasksService.get(user, id);
 
     return {
@@ -72,11 +80,12 @@ export class TasksController {
   @Put('/:id')
   @HttpCode(HttpStatus.OK)
   async update(
-    @GetUser() user: AuthUser,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
-    @Body() req: UpdateTaskRequest,
+    @Body() body: UpdateTaskRequest,
   ): Promise<ApiResponse<TaskResponse>> {
-    const data = await this.tasksService.update(user, id, req);
+    const user = req.user as AuthUser;
+    const data = await this.tasksService.update(user, id, body);
 
     return {
       success: true,
@@ -88,9 +97,10 @@ export class TasksController {
   @Delete('/:id')
   @HttpCode(HttpStatus.OK)
   async remove(
-    @GetUser() user: AuthUser,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
   ): Promise<ApiResponse<void>> {
+    const user = req.user as AuthUser;
     await this.tasksService.remove(user, id);
 
     return {

@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiResponse } from 'src/common/dto/api-response.dto';
@@ -14,9 +15,11 @@ import {
   RegisterRequest,
 } from 'src/common/dto/auth.dto';
 import type { AuthUser } from 'src/common/dto/auth.dto';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 import { AuthService } from './auth.service';
+import type { Request } from 'express';
+
+type AuthenticatedRequest = Request & { user?: AuthUser };
 
 @Controller('/api/auth')
 export class AuthController {
@@ -48,7 +51,9 @@ export class AuthController {
   @Get('/me')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  me(@GetUser() user: AuthUser): ApiResponse<AuthUser> {
+  me(@Req() req: AuthenticatedRequest): ApiResponse<AuthUser> {
+    const user = req.user as AuthUser;
+
     return {
       success: true,
       message: 'token valid',

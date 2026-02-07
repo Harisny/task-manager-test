@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
-import { RegisterSchema, LoginSchema } from 'src/auth/auth.validation';
+import { AuthValidation } from 'src/auth/auth.validation';
 import {
   LoginRequest,
   LoginResponse,
@@ -24,7 +24,7 @@ export class AuthService {
 
   async register(req: RegisterRequest): Promise<void> {
     const registerRequest = this.validationService.validate<RegisterRequest>(
-      RegisterSchema,
+      AuthValidation.REGISTER,
       req,
     );
 
@@ -51,7 +51,7 @@ export class AuthService {
 
   async login(req: LoginRequest): Promise<LoginResponse> {
     const loginRequest = this.validationService.validate<LoginRequest>(
-      LoginSchema,
+      AuthValidation.LOGIN,
       req,
     );
 
