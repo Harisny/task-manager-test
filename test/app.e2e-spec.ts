@@ -56,7 +56,7 @@ describe('Auth token (e2e)', () => {
     await app.close();
   });
 
-  it('registers, logs in, and validates token', async () => {
+  it('register, login, dan validate token', async () => {
     const server = app.getHttpServer();
 
     await request(server).post('/api/auth/register').send(testUser).expect(201);

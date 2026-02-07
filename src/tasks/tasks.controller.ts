@@ -86,11 +86,16 @@ export class TasksController {
   }
 
   @Delete('/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async remove(
     @GetUser() user: AuthUser,
     @Param('id') id: string,
-  ): Promise<void> {
+  ): Promise<ApiResponse<void>> {
     await this.tasksService.remove(user, id);
+
+    return {
+      success: true,
+      message: 'task berhasil dihapus',
+    };
   }
 }

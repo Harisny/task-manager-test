@@ -22,6 +22,11 @@ Pattern yang sering saya gunakan di project ini:
 - **ApiResponse Wrapper**: format respons API seragam dan mudah dipakai di frontend.
 - **E2E Auth Flow**: memastikan alur register/login/token berjalan sesuai kebutuhan.
 
+## Dokumentasi API
+
+Dokumentasi API tersedia di Postman:
+https://www.postman.com/maintenance-cosmonaut-65405313/dot/collection/29773494-4364b17e-647a-4e61-90e9-45b3126b1851?action=share&source=copy-link&creator=29773494
+
 ## Project setup
 
 ```bash
