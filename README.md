@@ -16,6 +16,7 @@ Proyek ini menggunakan service layer yang berinteraksi dengan Prisma, bukan mena
 
 Pattern yang sering saya gunakan di project ini:
 
+- **Modular Architecture**: Pattern ini memudahkan maintenance, pengujian, dan pengembangan fitur baru tanpa mengganggu modul lain.
 - **Service Layer + Prisma**: menjaga controller tipis, aturan bisnis terpusat, dan query konsisten.
 - **Validation dengan Zod**: validasi input jelas, error cepat terdeteksi, dan tipe data lebih aman.
 - **JWT Guard + Strategy (Passport)**: autentikasi terstruktur dan mudah diperluas.
