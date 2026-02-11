@@ -11,14 +11,17 @@ import {
   LoginResponse,
   RegisterRequest,
 } from 'src/common/dto/auth.dto';
-import { PrismaService } from 'src/common/prisma/prisma.service';
+import { User } from 'src/common/entities/user.entity';
 import { ValidationService } from 'src/common/validation/validation.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly validationService: ValidationService,
-    private readonly prismaService: PrismaService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -28,10 +31,8 @@ export class AuthService {
       req,
     );
 
-    const emailCount = await this.prismaService.user.count({
-      where: {
-        email: registerRequest.email,
-      },
+    const emailCount = await this.userRepository.count({
+      where: { email: registerRequest.email },
     });
 
     if (emailCount > 0) {
@@ -40,13 +41,13 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(registerRequest.password, 10);
 
-    await this.prismaService.user.create({
-      data: {
-        name: registerRequest.name,
-        email: registerRequest.email,
-        password: hashedPassword,
-      },
+    const user = this.userRepository.create({
+      name: registerRequest.name,
+      email: registerRequest.email,
+      password: hashedPassword,
     });
+
+    await this.userRepository.save(user);
   }
 
   async login(req: LoginRequest): Promise<LoginResponse> {
@@ -55,7 +56,7 @@ export class AuthService {
       req,
     );
 
-    const user = await this.prismaService.user.findUnique({
+    const user = await this.userRepository.findOne({
       where: { email: loginRequest.email },
     });
 

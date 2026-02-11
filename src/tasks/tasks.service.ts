@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/common/prisma/prisma.service';
 import { ValidationService } from 'src/common/validation/validation.service';
 import {
   CreateTaskRequest,
@@ -9,12 +8,16 @@ import {
 } from 'src/common/dto/tasks.dto';
 import { TaskValidation } from './tasks.validation';
 import type { AuthUser } from 'src/common/dto/auth.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Task } from 'src/common/entities/task.entity';
 
 @Injectable()
 export class TasksService {
   constructor(
-    private readonly prismaService: PrismaService,
     private readonly validationService: ValidationService,
+    @InjectRepository(Task)
+    private readonly taskRepository: Repository<Task>,
   ) {}
 
   async create(user: AuthUser, req: CreateTaskRequest): Promise<TaskResponse> {
@@ -23,15 +26,15 @@ export class TasksService {
       req,
     );
 
-    const task = await this.prismaService.task.create({
-      data: {
-        title: createRequest.title,
-        description: createRequest.description,
-        userId: user.id,
-      },
+    const task = this.taskRepository.create({
+      title: createRequest.title,
+      description: createRequest.description ?? null,
+      userId: user.id,
     });
 
-    const { description, ...rest } = task;
+    const saved = await this.taskRepository.save(task);
+
+    const { description, ...rest } = saved;
 
     return {
       ...rest,
@@ -40,15 +43,10 @@ export class TasksService {
   }
 
   async list(user: AuthUser): Promise<TasksResponse> {
-    const [tasks, total] = await Promise.all([
-      this.prismaService.task.findMany({
-        where: { userId: user.id },
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prismaService.task.count({
-        where: { userId: user.id },
-      }),
-    ]);
+    const [tasks, total] = await this.taskRepository.findAndCount({
+      where: { userId: user.id },
+      order: { createdAt: 'DESC' },
+    });
 
     return {
       tasks: tasks.map((task) => {
@@ -64,7 +62,7 @@ export class TasksService {
   }
 
   async get(user: AuthUser, id: string): Promise<TaskResponse> {
-    const task = await this.prismaService.task.findFirst({
+    const task = await this.taskRepository.findOne({
       where: { id, userId: user.id },
     });
 
@@ -90,7 +88,7 @@ export class TasksService {
       req,
     );
 
-    const existing = await this.prismaService.task.findFirst({
+    const existing = await this.taskRepository.findOne({
       where: { id, userId: user.id },
     });
 
@@ -98,13 +96,14 @@ export class TasksService {
       throw new HttpException('task tidak ditemukan', HttpStatus.NOT_FOUND);
     }
 
-    const task = await this.prismaService.task.update({
-      where: { id: existing.id },
-      data: {
-        title: updateRequest.title,
-        description: updateRequest.description,
-        status: updateRequest.status,
-      },
+    const task = await this.taskRepository.save({
+      ...existing,
+      title: updateRequest.title ?? existing.title,
+      description:
+        updateRequest.description === undefined
+          ? existing.description
+          : (updateRequest.description ?? null),
+      status: updateRequest.status ?? existing.status,
     });
 
     const { description, ...rest } = task;
@@ -116,7 +115,7 @@ export class TasksService {
   }
 
   async remove(user: AuthUser, id: string): Promise<void> {
-    const existing = await this.prismaService.task.findFirst({
+    const existing = await this.taskRepository.findOne({
       where: { id, userId: user.id },
     });
 
@@ -124,8 +123,6 @@ export class TasksService {
       throw new HttpException('task tidak ditemukan', HttpStatus.NOT_FOUND);
     }
 
-    await this.prismaService.task.delete({
-      where: { id: existing.id },
-    });
+    await this.taskRepository.delete({ id: existing.id });
   }
 }

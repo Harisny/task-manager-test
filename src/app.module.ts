@@ -1,11 +1,18 @@
 import { Module } from '@nestjs/common';
-
-import { PrismaModule } from './common/prisma/prisma.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
+import { typeOrmConfig } from './common/typeorm/typeorm.config';
 
 @Module({
-  imports: [PrismaModule, AuthModule, TasksModule],
+  imports: [
+    TypeOrmModule.forRoot({
+      ...typeOrmConfig,
+      autoLoadEntities: true,
+    }),
+    AuthModule,
+    TasksModule,
+  ],
   controllers: [],
   providers: [],
 })

@@ -4,8 +4,9 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { randomUUID } from 'crypto';
-import { PrismaClient } from '@prisma/client';
+import { DataSource } from 'typeorm';
 import { AppModule } from './../src/app.module';
+import { User } from '../src/common/entities/user.entity';
 
 type LoginResponseBody = {
   data?: { accessToken?: string };
@@ -20,9 +21,10 @@ const getAccessToken = (body: unknown): string | undefined => {
   return typedBody.data?.accessToken;
 };
 
+// test e2e untuk fitur autentikasi dan validasi token
 describe('Auth token (e2e)', () => {
   let app: INestApplication<App>;
-  let prisma: PrismaClient;
+  let dataSource: DataSource;
 
   const testUser = {
     name: 'Test User',
@@ -42,17 +44,14 @@ describe('Auth token (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    prisma = new PrismaClient();
-    await prisma.user.deleteMany({
-      where: { email: testUser.email },
-    });
+    dataSource = app.get(DataSource);
+    await dataSource.getRepository(User).delete({ email: testUser.email });
   });
 
   afterAll(async () => {
-    await prisma.user.deleteMany({
-      where: { email: testUser.email },
-    });
-    await prisma.$disconnect();
+    if (dataSource?.isInitialized) {
+      await dataSource.getRepository(User).delete({ email: testUser.email });
+    }
     await app.close();
   });
 

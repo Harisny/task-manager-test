@@ -2,22 +2,22 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Alasan Service Layer + Prisma
+## Alasan Service Layer + TypeORM
 
-Proyek ini menggunakan service layer yang berinteraksi dengan Prisma, bukan menaruh logika database di controller. Tujuannya:
+Proyek ini menggunakan service layer yang berinteraksi dengan TypeORM, bukan menaruh logika database di controller. Tujuannya:
 
 - Menjaga controller tetap ringkas dan fokus pada urusan HTTP (routing, status code, response).
 - Memusatkan aturan bisnis dan akses data agar mudah dipakai ulang dan diuji.
 - Memudahkan unit test dengan memocking service tanpa perlu menjalankan HTTP.
 - Mengurangi duplikasi ketika beberapa endpoint butuh logika data yang sama.
-- Menjaga query Prisma konsisten dan lebih mudah dikembangkan saat skema bertambah.
+- Menjaga query database konsisten dan lebih mudah dikembangkan saat skema bertambah.
 
 ## Pattern yang Sering Digunakan
 
 Pattern yang sering saya gunakan di project ini:
 
 - **Modular Architecture**: Pattern ini memudahkan maintenance, pengujian, dan pengembangan fitur baru tanpa mengganggu modul lain.
-- **Service Layer + Prisma**: menjaga controller tipis, aturan bisnis terpusat, dan query konsisten.
+- **Service Layer + TypeORM**: menjaga controller tipis, aturan bisnis terpusat, dan query konsisten.
 - **Validation dengan Zod**: validasi input jelas, error cepat terdeteksi, dan tipe data lebih aman.
 - **JWT Guard + Strategy (Passport)**: autentikasi terstruktur dan mudah diperluas.
 - **ApiResponse Wrapper**: format respons API seragam dan mudah dipakai di frontend.

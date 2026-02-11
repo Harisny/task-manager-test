@@ -1,4 +1,4 @@
-import { TaskStatus } from '../../../generated/prisma';
+import { TaskStatus } from '../enums/task-status.enum';
 
 export class CreateTaskRequest {
   title: string;
